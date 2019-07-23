@@ -4,6 +4,7 @@ from moviepy.editor import ImageSequenceClip
 from socket import *
 from PyQt4 import QtCore
 from PyQt4 import QtGui
+from Image2IQFile import *
      
 class ShowVideo(QtCore.QObject):
     def __init__(self, parent = None):
@@ -22,9 +23,12 @@ class ShowVideo(QtCore.QObject):
         self.port = 4096
         self.buf = 1024
         #HackRF variables
+        self.outputFile = self.localDir +  "/frames/frameSmallG.iqhackrf"
+        self.sourceFile = self.localDir +  "/frames/frameSmallG.jpg"
         self.transFreq = 440000000
         self.transBand = 1750000
-        self.transSamp = 1100000
+        self.transSamp = 1000000
+        self.lineTime = 0.005
         self.flipFrame = 0
         
     camera = cv2.VideoCapture(1)
@@ -60,11 +64,12 @@ class ShowVideo(QtCore.QObject):
                 cv2.imwrite(self.localDir + "/frames/frame.jpg", frame2resize)
                 ###Based on the chosen transmission method the images are either sent over LAN or via HACKRF
                 if(self.counter >= self.skipValue):  
-                    #if we are transmitting over LAN
+                    # # # if we are transmitting over LAN
                     if self.transMeth == 0:                                               
                             print "sending image: ", self.counter , " over LAN"
                             self.sendFile(self.localDir + "/frames/frame.jpg")
-                    #if we are tranmsitting over HACKRF with IQ modulation
+                            
+                    # # # if we are tranmsitting over HACKRF with IQ modulation
                     elif self.transMeth == 1:   
                         print "Encoding frame: ", self.counter
                         #frame can be flipped depending on receiving waterfall                        
@@ -73,11 +78,13 @@ class ShowVideo(QtCore.QObject):
                         else:
                             frame_toSend = frame2resize
                         cv2.imwrite(self.localDir + "/frames/frameSmallG.jpg", frame_toSend)
-                        os.system("python " + self.localDir +  "/spectrum_painter/img2iqstream.py -s 1000000 -l 0.004 -o " + self.localDir +  "/frames/frameSmallG.iqhackrf --format hackrf " + self.localDir +  "/frames/frameSmallG.jpg")
+                        #use the IQstream converter to convert the image into a hackrf tranmsission file
+                        tran = Image2IQFile(self.transSamp,self.lineTime,self.outputFile,self.sourceFile)
+                        tran.convert()
                         print "Transmiting frame: "
                         #transmit the saved image using the hackRF
                         os.system("hackrf_transfer -t " + self.localDir +  "/frames/frameSmallG.iqhackrf -f " + str(self.transFreq) + " -b " + str(self.transBand) + " -s " + str(self.transSamp) + " -x 20 -a 1")
-                    #if we are transmitting over HACKRF with PAL modulation
+                    # # # if we are transmitting over HACKRF with PAL modulation
                     elif self.transMeth == 2:
                         print "Encoding Video with ", self.counter, " images."
                         clip = ImageSequenceClip("recording", 10)
