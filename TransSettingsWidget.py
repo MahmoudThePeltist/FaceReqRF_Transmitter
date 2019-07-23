@@ -1,4 +1,5 @@
-from PyQt4.QtGui import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 import os
 import sys
 
@@ -7,7 +8,7 @@ class TransmissionSettings(QDialog):
     
     def __init__(self):
         super(TransmissionSettings, self).__init__()
-        #get the local directory
+        # get the local directory
         if getattr(sys, 'frozen', False):
             # The application is frozen
             self.localDir = os.path.dirname(sys.executable)
@@ -18,29 +19,29 @@ class TransmissionSettings(QDialog):
         self.setWindowTitle("Transmission Settings")                
         self.setWindowIcon(QIcon(self.localDir + "/images/FaceReqRFIcon.png")) 
         
-        #Create Radio Button group and radio buttons
+        # Create Radio Button group and radio buttons
         self.radio_button_group = QButtonGroup()
         self.radio_button_0 = QRadioButton("Local Area Network")
         self.radio_button_1 = QRadioButton("HackRF One - IQ Modulation")
         self.radio_button_2 = QRadioButton("HackRF One - Pal Modulation")
-        #connect each radio button to a fuction
+        # connect each radio button to a fuction
         self.radio_button_0.clicked.connect(self.clicked_LAN)
         self.radio_button_1.clicked.connect(self.clicked_RF)
         self.radio_button_2.clicked.connect(self.clicked_PAL)
-        #create layout and add the buttons
+        # create layout and add the buttons
         self.radio_button_layout = QVBoxLayout()
         self.radio_button_layout.addWidget(self.radio_button_0)
         self.radio_button_layout.addWidget(self.radio_button_1)
         self.radio_button_layout.addWidget(self.radio_button_2)
-        #add buttons to button group
+        # add buttons to button group
         self.radio_button_group.addButton(self.radio_button_0)
         self.radio_button_group.addButton(self.radio_button_1) 
         self.radio_button_group.addButton(self.radio_button_2) 
-        #set button IDs      
+        # set button IDs
         self.radio_button_group.setId(self.radio_button_0, 0)
         self.radio_button_group.setId(self.radio_button_1, 1)   
         self.radio_button_group.setId(self.radio_button_2, 2)               
-        #create the labels and textboxes
+        # create the labels and textboxes
         self.label1 = QLabel("Adress: ")
         self.label2 = QLabel("Port: ")
         self.label3 = QLabel("Buffer: ")
@@ -61,15 +62,15 @@ class TransmissionSettings(QDialog):
         self.textBox8 = QLineEdit()
         self.textBox9 = QLineEdit()
         self.checkBox1 = QCheckBox()
-        #create submit button and connect it to function
+        # create submit button and connect it to function
         self.SettingsSubmitButton = QPushButton("Submit")  
         self.SettingsSubmitButton.clicked.connect(self.close)
-        #create layouts
+        # create layouts
         self.LAN_setting_form_layout = QGridLayout()
         self.RF_setting_form_layout = QGridLayout()
         self.Other_setting_form_layout = QGridLayout()
         self.setting_total_layout = QVBoxLayout()
-        #add lable widgets to the grid layout
+        # add lable widgets to the grid layout
         self.LAN_setting_form_layout.addWidget(self.label1,0,0)
         self.LAN_setting_form_layout.addWidget(self.label2,1,0)
         self.LAN_setting_form_layout.addWidget(self.label3,2,0)
@@ -80,7 +81,7 @@ class TransmissionSettings(QDialog):
         self.Other_setting_form_layout.addWidget(self.label7,0,0)
         self.Other_setting_form_layout.addWidget(self.label8,1,0)
         self.Other_setting_form_layout.addWidget(self.label10,2,0)
-        #add line edit widgets to the grid layout
+        # add line edit widgets to the grid layout
         self.LAN_setting_form_layout.addWidget(self.textBox1,0,1)
         self.LAN_setting_form_layout.addWidget(self.textBox2,1,1)
         self.LAN_setting_form_layout.addWidget(self.textBox3,2,1)
@@ -91,30 +92,30 @@ class TransmissionSettings(QDialog):
         self.Other_setting_form_layout.addWidget(self.textBox7,0,1)
         self.Other_setting_form_layout.addWidget(self.textBox8,1,1)
         self.Other_setting_form_layout.addWidget(self.textBox9,2,1)
-        #create group boxes for each part of the window
+        # create group boxes for each part of the window
         self.radio_group_box = QGroupBox("Please select a transmission method:") 
         self.Other_group_box = QGroupBox("General Settings:") 
         self.LAN_group_box = QGroupBox("Lan Settings:") 
         self.RF_group_box = QGroupBox("RF Settings:") 
-        #add QWidget layouts to group boxes
+        # add QWidget layouts to group boxes
         self.radio_group_box.setLayout(self.radio_button_layout)
         self.Other_group_box.setLayout(self.Other_setting_form_layout)
         self.LAN_group_box.setLayout(self.LAN_setting_form_layout)
         self.RF_group_box.setLayout(self.RF_setting_form_layout)
-        #add the group boxes and button widget to layout 
+        # add the group boxes and button widget to layout
         self.setting_total_layout.addWidget(self.radio_group_box)
         self.setting_total_layout.addWidget(self.Other_group_box)
         self.setting_total_layout.addWidget(self.LAN_group_box)
         self.setting_total_layout.addWidget(self.RF_group_box)
         self.setting_total_layout.addWidget(self.SettingsSubmitButton)
-        #set the widget layout as the total layout
+        # set the widget layout as the total layout
         self.setLayout(self.setting_total_layout)
         
-    #function to set the textbox default values
+    # function to set the textbox default values
     def setValues(self, transMethod, gottenAddress, gottenPort, gottenBuffer, gottenFrequency, gottenSampRate, gottenBandwidth, gottenCamPort, gottenFlip, gottenResize, gottenSkipValue):
-        print "Current LAN Values are: ", transMethod, gottenAddress, gottenPort, gottenBuffer
-        print "Current RF Values are: ", gottenFrequency, gottenSampRate, gottenBandwidth, gottenFlip
-        print "Current Camera port: ", gottenCamPort, " - Resize value: ", gottenResize, " - Skipping ", gottenSkipValue, " - Frames."
+        print("Current LAN Values are: ", transMethod, gottenAddress, gottenPort, gottenBuffer)
+        print("Current RF Values are: ", gottenFrequency, gottenSampRate, gottenBandwidth, gottenFlip)
+        print("Current Camera port: ", gottenCamPort, " - Resize value: ", gottenResize, " - Skipping ", gottenSkipValue, " - Frames.")
         if transMethod == 0:
             self.radio_button_0.setChecked(True)
             self.LAN_group_box.show()
@@ -153,14 +154,14 @@ class TransmissionSettings(QDialog):
         elif gottenFlip == 1:
             self.checkBox1.setChecked(1)
         
-    #function to return the new entered values
+    # function to return the new entered values
     def getValues(self):
-        print "New LAN values are: ", self.radio_button_group.checkedId() , self.textBox1.text(), int(self.textBox2.text()), int(self.textBox3.text())
-        print "New RF values are: ", int(self.textBox4.text()), int(self.textBox5.text()), int(self.textBox6.text()), int(self.checkBox1.isChecked())
-        print "New Camera port is: ", int(self.textBox7.text()), " - Resize value: ", int(self.textBox8.text()), " - Skipping ", int(self.textBox9.text()), " Frames."
+        print("New LAN values are: ", self.radio_button_group.checkedId() , self.textBox1.text(), int(self.textBox2.text()), int(self.textBox3.text()))
+        print("New RF values are: ", int(self.textBox4.text()), int(self.textBox5.text()), int(self.textBox6.text()), int(self.checkBox1.isChecked()))
+        print("New Camera port is: ", int(self.textBox7.text()), " - Resize value: ", int(self.textBox8.text()), " - Skipping ", int(self.textBox9.text()), " Frames.")
         return self.radio_button_group.checkedId() , self.textBox1.text(), int(self.textBox2.text()), int(self.textBox3.text()), int(self.textBox4.text()), int(self.textBox5.text()), int(self.textBox6.text()),  int(self.textBox7.text()), int(self.checkBox1.isChecked()), int(self.textBox8.text()), int(self.textBox9.text())
         
-    #functions to control which settings are enabled or disabled
+    # functions to control which settings are enabled or disabled
     def clicked_LAN(self):
         self.RF_group_box.hide()
         self.LAN_group_box.show()

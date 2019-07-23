@@ -1,104 +1,105 @@
-print "---- ### Welcome to FaceReqRF ### ----"
-print "Importing Sys, OS and CV2 libraries... "
+print("---- ### Welcome to FaceReqRF ### ----")
+print("Importing Sys, OS and CV2 libraries... ")
 import cv2
 import sys
 import os
-print "Importing PyQt4 and Numpy libraries..."
-from PyQt4 import QtCore
-from PyQt4 import QtGui
-#these imports are for cx_freeze
+print("Importing PyQt5 and Numpy libraries...")
+from PyQt5 import QtCore
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+# these imports are for cx_freeze
 import numpy.core._methods
 import numpy.lib.format
-#import local modules
-print "Importing local modules..."
+# import local modules
+print("Importing local modules...")
 from TransSettingsWidget import *
 from TransDisplayMethods import *
 from TransDialogHelp import *
 from TransDialogError import *
 
-class mainWindow(QtGui.QMainWindow):
+class mainWindow(QMainWindow):
     def __init__(self):
-        #call super user constructor
+        # call super user constructor
         super(mainWindow,self).__init__()
-        #get the local directory
+        # get the local directory
         if getattr(sys, 'frozen', False):
             # The application is frozen
             self.localDir = os.path.dirname(sys.executable)
         else:
             # The application is not frozen
             self.localDir = os.path.dirname(os.path.realpath(__file__))    
-        #create folders
-        #Make sure frames directory exists
+        # create folders
+        # Make sure frames directory exists
         if not os.path.exists(self.localDir + "/frames"):
-            print "Directory: ", (self.localDir + "/frames"), " does not exist, creating..."
+            print("Directory: ", (self.localDir + "/frames"), " does not exist, creating...")
             os.makedirs(self.localDir + "/frames")
-        #Make sure recording directory exists
+        # Make sure recording directory exists
         if not os.path.exists(self.localDir + "/recording"):
-            print "Directory: ", (self.localDir + "/recording"), " does not exist, creating..."
+            print("Directory: ", (self.localDir + "/recording"), " does not exist, creating...")
             os.makedirs(self.localDir + "/recording")
-        #set window title
+        # set window title
         self.setWindowTitle("FaceReqRF - Transmission")
         self.setWindowIcon(QIcon(self.localDir + "/images/FaceReqRFIcon.png"))
-        #stylesheet
+        # stylesheet
         self.setStyleSheet("QPushButton {background-color: #7a92ba; height:30%; border: none; color:white; font-size:16px;} QPushButton:hover{background-color: #5370a0}")
-        #call the function to create the window
+        # call the function to create the window
         self.create_menu_layout()
-        #select the central widget to display the layout
-        self.central_widget = QtGui.QWidget()
+        # select the central widget to display the layout
+        self.central_widget = QWidget()
         self.central_widget.setLayout(self.total_layout)
         self.setCentralWidget(self.central_widget)
-        #falgs
+        # falgs
         self.tranFlag = False
         
     def create_menu_layout(self):
-        #Video classes:
+        # Video classes:
         self.thread = QtCore.QThread()
         self.thread.start()
         self.vid = ShowVideo()
         self.vid.moveToThread(self.thread)
         self.image_viewer = ImageViewer()
-        #Buttons:
-        self.transmit_button = QtGui.QPushButton('<< Start Transmition >>')
-        self.settings_button = QtGui.QPushButton('Transmission Settings')
-        self.help_button = QtGui.QPushButton('Help')
-        self.quit_button = QtGui.QPushButton('Quit')
-        #Connections:    
+        # Buttons:
+        self.transmit_button = QPushButton('<< Start Transmition >>')
+        self.settings_button = QPushButton('Transmission Settings')
+        self.help_button = QPushButton('Help')
+        self.quit_button = QPushButton('Quit')
+        # Connections:
         self.transmit_button.clicked.connect(self.startVideo)
         self.settings_button.clicked.connect(self.modifySettings)
         self.help_button.clicked.connect(self.helpWindow)
         self.quit_button.clicked.connect(self.quitProgram)
         self.vid.video_signal.connect(self.image_viewer.setImage)
-        #next is a button designed to do nothing but start transmission, this is to "fix" the 
-        #error that happens when self.vid.startVideo() is called ouside of a button click
+        # next is a button designed to do nothing but start transmission, this is to "fix" the
+        # error that happens when self.vid.startVideo() is called ouside of a button click
         self.invisible_start_btn = QPushButton("you should not be seeing this")
         self.invisible_start_btn.clicked.connect(self.vid.startVideo)
-        #Layouts:
-        self.total_layout = QtGui.QVBoxLayout()
-        self.button_layout_B = QtGui.QHBoxLayout()
-        #add Widgets to their layouts
+        # Layouts:
+        self.total_layout = QVBoxLayout()
+        self.button_layout_B = QHBoxLayout()
+        # add Widgets to their layouts
         self.button_layout_B.addWidget(self.settings_button)
         self.button_layout_B.addWidget(self.help_button)
         self.button_layout_B.addWidget(self.quit_button)
         self.total_layout.addWidget(self.image_viewer)
         self.total_layout.addWidget(self.transmit_button)
         self.total_layout.addLayout(self.button_layout_B)
-        #create widget to display this layout
-        self.layout_widget = QtGui.QWidget()
+        # create widget to display this layout
+        self.layout_widget = QWidget()
         self.layout_widget.setLayout(self.total_layout)
         self.vid.run_video = False
         
     def startVideo(self):
-        #if we are transmitting pause and if we are paused start transmitting
+        # if we are transmitting pause and if we are paused start transmitting
         if self.tranFlag == False:
-            #call self.video.startVideo() func with this click() see func where btn is defined for more info
+            # call self.video.startVideo() func with this click() see func where btn is defined for more info
             self.invisible_start_btn.click()
-            self.tranFlag = True #set local flag            
-            print "Starting transmission..."
-            self.transmit_button.setText(">> Pause Transmission <<") #change the text written on the btn
+            self.tranFlag = True # set local flag
+            print("Starting transmission...")
+            self.transmit_button.setText(">> Pause Transmission <<") # change the text written on the btn
         elif self.tranFlag == True:
-            print "Pausing reception..."
-            self.vid.run_video = False #set the startVideo function flag off, so we pause
-            self.tranFlag = False #set local flag
+            print("Pausing reception...")
+            self.vid.run_video = False # set the startVideo function flag off, so we pause
+            self.tranFlag = False # set local flag
             self.transmit_button.setText("<< Start Transmission >>")  #change the text written on the btn  
 
     def modifySettings(self):
@@ -110,19 +111,19 @@ class mainWindow(QtGui.QMainWindow):
             self.settings_dialog = TransmissionSettings()
             #set values
             self.settings_dialog.setValues(self.vid.transMeth,self.vid.host,self.vid.port,self.vid.buf,self.vid.transFreq,self.vid.transSamp,self.vid.transBand,self.vid.cameraPort, self.vid.flipFrame, self.vid.frame, self.vid.skipValue)
-            print "Running dialog box."
+            print("Running dialog box.")
             self.settings_dialog.exec_()
-            print "Getting setting values."
+            print("Getting setting values.")
             self.vid.transMeth,self.vid.host,self.vid.port,self.vid.buf,self.vid.transFreq,self.vid.transSamp,self.vid.transBand, newCamPort, self.vid.flipFrame, self.vid.frame, self.vid.skipValue = self.settings_dialog.getValues()
             if self.vid.cameraPort != newCamPort:
                 self.vid.cameraPort = newCamPort            
                 self.vid.camera = cv2.VideoCapture(self.vid.cameraPort)    
         except Exception as e:
-            print "Settings dialog error.\nException:" + str(e)
+            print("Settings dialog error.\nException:" + str(e))
             errorBox("Settings dialog error.\nException:" + str(e))
             
     def helpWindow(self):
-        print "showing help window..."
+        print("showing help window...")
         self.msg = helpMenu()
         self.msg.exec_()
 
@@ -130,13 +131,13 @@ class mainWindow(QtGui.QMainWindow):
         try:
             if self.tranFlag == True:
                 self.startVideo()
-            print "Quiting..."
+            print("Quiting...")
             self.close()
         except Exception as e:
-            print "Quit error.\nException:" + str(e)
+            print("Quit error.\nException:" + str(e))
             errorBox("Quit error.\nException:" + str(e))
 def main():
-    application = QtGui.QApplication(sys.argv) #create new application
+    application = QApplication(sys.argv) #create new application
     main_window = mainWindow() #Create new instance of main window
     main_window.setGeometry(25,50,600,580)
     main_window.show() #make instance visible
