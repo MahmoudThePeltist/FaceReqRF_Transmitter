@@ -1,12 +1,16 @@
+print "---- ### Welcome to FaceReqRF ### ----"
+print "Importing Sys, OS and CV2 libraries... "
 import cv2
 import sys
 import os
+print "Importing PyQt4 and Numpy libraries..."
 from PyQt4 import QtCore
 from PyQt4 import QtGui
 #these imports are for cx_freeze
 import numpy.core._methods
 import numpy.lib.format
 #import local modules
+print "Importing local modules..."
 from TransSettingsWidget import *
 from TransDisplayMethods import *
 from TransDialogHelp import *

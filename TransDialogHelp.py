@@ -1,5 +1,6 @@
 from PyQt4.QtGui import *
 import os
+import sys
 
 class helpMenu(QDialog):
     """This class will display a dialog that contains help info"""

@@ -1,10 +1,15 @@
 import cv2
 import os
 import sys
-from moviepy.editor import ImageSequenceClip
 from socket import *
 from PyQt4 import QtCore
 from PyQt4 import QtGui
+#try to import moviepy
+print "Trying to import Moviepy..."
+try:
+    from moviepy.editor import ImageSequenceClip
+except Exception as e:
+   print "MoviePy import error.\nException:" + str(e)
 #import local modules
 from Image2IQFile import *
 from TransDialogError import *
@@ -46,25 +51,20 @@ class ShowVideo(QtCore.QObject):
     video_signal = QtCore.pyqtSignal(QtGui.QImage, name = 'vidSig')
 
     def sendFile(self, fName):
-        try:
-            #open socket to transmit data
-            s = socket()
-            s.connect((self.host, self.port))
-            f = open(fName, "rb") #open file to be transmited
-            print 'Sending ', fName, ' to ', self.host, self.port
+        #open socket to transmit data
+        s = socket()
+        s.connect((self.host, self.port))
+        f = open(fName, "rb") #open file to be transmited
+        print 'Sending ', fName, ' to ', self.host, self.port
+        data = f.read(self.buf)
+        while data:
+            s.send(data)
             data = f.read(self.buf)
-            while data:
-                s.send(data)
-                data = f.read(self.buf)
-            f.close()#close file after transmission
-            print "done sending"
-            s.shutdown(SHUT_WR)
-            print s.recv(self.buf)
-            s.close()#close socket after transmission
-        except Exception as e:
-            print "Socket error.\nException:" + str(e)
-            self.run_video = False
-            errorBox("Socket error.\nException:" + str(e))
+        f.close()#close file after transmission
+        print "done sending"
+        s.shutdown(SHUT_WR)
+        print s.recv(self.buf)
+        s.close()#close socket after transmission     
             
     @QtCore.pyqtSlot()
     def startVideo(self):
@@ -81,12 +81,17 @@ class ShowVideo(QtCore.QObject):
                 ###Based on the chosen transmission method the images are either sent over LAN or via HACKRF
                 if(self.counter >= self.skipValue):  
                     # # # if we are transmitting over LAN
-                    if self.transMeth == 0:                       
-                        print "sending image: ", self.counter , " over LAN"
-                        self.sendFile(self.localDir + "/frames/frame.jpg")
-                        #finally reset the counter
-                        self.counter = 0
-                    
+                    if self.transMeth == 0:
+                        try:
+                            print "sending image: ", self.counter , " over LAN"
+                            self.sendFile(self.localDir + "/frames/frame.jpg")
+                            #finally reset the counter
+                            self.counter = 0
+                        except Exception as e:
+                            print "Socket error.\nException:" + str(e)
+                            self.counter = 0  
+                            self.run_video = False
+                            break
                     # # # if we are tranmsitting over HACKRF with IQ modulation
                     elif self.transMeth == 1:   
                         try:
@@ -107,8 +112,9 @@ class ShowVideo(QtCore.QObject):
                             self.counter = 0 
                         except Exception as e:
                             print "HACKRF IQ Tx error.\nException:" + str(e)
-                            errorBox("HACKRF IQ Tx error.\nException:" + str(e))
+                            self.counter = 0  
                             self.run_video = False
+                            errorBox("HACKRF IQ Tx error.\nException:" + str(e))
                             break
                     
                     # # # if we are transmitting over HACKRF with PAL modulation
@@ -123,8 +129,9 @@ class ShowVideo(QtCore.QObject):
                             self.counter = 0 
                         except Exception as e:
                             print "HACKRF Pal Tx error.\nException:" + str(e)
-                            errorBox("HACKRF Pal Tx error.\nException:" + str(e))  
+                            self.counter = 0  
                             self.run_video = False
+                            errorBox("HACKRF Pal Tx error.\nException:" + str(e)) 
                             break                         
                             
                 #if we are using PAL transmission save a number of images
