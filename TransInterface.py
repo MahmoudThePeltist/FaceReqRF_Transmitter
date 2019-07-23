@@ -86,11 +86,11 @@ class mainWindow(QtGui.QMainWindow):
         #instantiate the dialog box
         self.settings_dialog = TransmissionSettings()
         #set values
-        self.settings_dialog.setValues(self.vid.transMeth,self.vid.host,self.vid.port,self.vid.buf,self.vid.transFreq,self.vid.transSamp,self.vid.transBand,self.vid.cameraPort, self.vid.flipFrame, self.vid.frameX, self.vid.frameY, self.vid.skipValue)
+        self.settings_dialog.setValues(self.vid.transMeth,self.vid.host,self.vid.port,self.vid.buf,self.vid.transFreq,self.vid.transSamp,self.vid.transBand,self.vid.cameraPort, self.vid.flipFrame, self.vid.frame, self.vid.skipValue)
         print "Running dialog box."
         self.settings_dialog.exec_()
         print "Getting setting values."
-        self.vid.transMeth,self.vid.host,self.vid.port,self.vid.buf,self.vid.transFreq,self.vid.transSamp,self.vid.transBand, newCamPort, self.vid.flipFrame, self.vid.frameX, self.vid.frameY, self.vid.skipValue = self.settings_dialog.getValues()
+        self.vid.transMeth,self.vid.host,self.vid.port,self.vid.buf,self.vid.transFreq,self.vid.transSamp,self.vid.transBand, newCamPort, self.vid.flipFrame, self.vid.frame, self.vid.skipValue = self.settings_dialog.getValues()
         if self.vid.cameraPort != newCamPort:
             self.vid.cameraPort = newCamPort            
             self.vid.camera = cv2.VideoCapture(self.vid.cameraPort)    

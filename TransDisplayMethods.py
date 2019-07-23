@@ -1,6 +1,6 @@
 import cv2
 import os
-
+from moviepy.editor import ImageSequenceClip
 from socket import *
 from PyQt4 import QtCore
 from PyQt4 import QtGui
@@ -15,8 +15,7 @@ class ShowVideo(QtCore.QObject):
         self.counter = 0
         self.skipValue = 10
         self.cameraPort = 1
-        self.frameX = 1
-        self.frameY = 1
+        self.frame = 1
         #LAN variables
         self.transMeth = 0
         self.host = "127.0.0.1"
@@ -25,7 +24,7 @@ class ShowVideo(QtCore.QObject):
         #HackRF variables
         self.transFreq = 440000000
         self.transBand = 1750000
-        self.transSamp = 750000
+        self.transSamp = 1100000
         self.flipFrame = 0
         
     camera = cv2.VideoCapture(1)
@@ -57,14 +56,15 @@ class ShowVideo(QtCore.QObject):
                 #get frames from CNT class
                 print "Capturing Frame: ", self.counter
                 #resize and save the frame as a jpeg image locally
-                frame2resize = cv2.resize(frame,(0,0),fx=self.frameX,fy=self.frameY)
+                frame2resize = cv2.resize(frame,(0,0),fx=self.frame,fy=self.frame)
                 cv2.imwrite(self.localDir + "/frames/frame.jpg", frame2resize)
                 ###Based on the chosen transmission method the images are either sent over LAN or via HACKRF
                 if(self.counter >= self.skipValue):  
-                    self.counter = 0 
+                    #if we are transmitting over LAN
                     if self.transMeth == 0:                                               
                             print "sending image: ", self.counter , " over LAN"
                             self.sendFile(self.localDir + "/frames/frame.jpg")
+                    #if we are tranmsitting over HACKRF with IQ modulation
                     elif self.transMeth == 1:   
                         print "Encoding frame: ", self.counter
                         #frame can be flipped depending on receiving waterfall                        
@@ -77,6 +77,18 @@ class ShowVideo(QtCore.QObject):
                         print "Transmiting frame: "
                         #transmit the saved image using the hackRF
                         os.system("hackrf_transfer -t " + self.localDir +  "/frames/frameSmallG.iqhackrf -f " + str(self.transFreq) + " -b " + str(self.transBand) + " -s " + str(self.transSamp) + " -x 20 -a 1")
+                    #if we are transmitting over HACKRF with PAL modulation
+                    elif self.transMeth == 2:
+                        print "Encoding Video with ", self.counter, " images."
+                        clip = ImageSequenceClip("recording", 10)
+                        print "Writing file..."
+                        clip.write_videofile(self.localDir + "/toSend.mp4",codec = "libx264")
+                        os.system("hacktv -f "+str(self.transFreq)+" -m i -g 47 "+self.localDir+"/toSend.mp4")
+                    #finally reset the counter
+                    self.counter = 0 
+                #if we are using PAL transmission save a number of images
+                if self.transMeth == 2:
+                    cv2.imwrite(self.localDir + "/recording/" + str(self.counter) + ".jpg", frame2resize)
                 else:
                     print "skipping Frame: ", self.counter
                 self.counter = self.counter + 1
