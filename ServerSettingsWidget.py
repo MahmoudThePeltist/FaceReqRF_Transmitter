@@ -1,11 +1,15 @@
 from PyQt4.QtGui import *
+import os
 
 class TransmissionSettings(QDialog):
     """This class provides a settings window for the server"""
     
     def __init__(self):
         super(TransmissionSettings, self).__init__()
-        
+
+        self.localDir = os.path.dirname(os.path.realpath(__file__))        
+        self.setWindowTitle("Transmission Settings")                
+        self.setWindowIcon(QIcon(self.localDir + "/images/FaceReqRFIcon.png"))        
         #Add Radio Buttons
         self.radio_group_box = QGroupBox("Please select a transmission method:") 
         self.radio_button_group = QButtonGroup()
