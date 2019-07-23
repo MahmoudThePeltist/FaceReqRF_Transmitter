@@ -3,17 +3,35 @@ import sys
 import os
 from PyQt4 import QtCore
 from PyQt4 import QtGui
-#import local classes
+#these imports are for cx_freeze
+import numpy.core._methods
+import numpy.lib.format
+#import local modules
 from TransSettingsWidget import *
 from TransDisplayMethods import *
 from TransDialogHelp import *
+from TransDialogError import *
 
 class mainWindow(QtGui.QMainWindow):
     def __init__(self):
         #call super user constructor
         super(mainWindow,self).__init__()
-        #get local directory        
-        self.localDir = os.path.dirname(os.path.realpath(__file__))
+        #get the local directory
+        if getattr(sys, 'frozen', False):
+            # The application is frozen
+            self.localDir = os.path.dirname(sys.executable)
+        else:
+            # The application is not frozen
+            self.localDir = os.path.dirname(os.path.realpath(__file__))    
+        #create folders
+        #Make sure frames directory exists
+        if not os.path.exists(self.localDir + "/frames"):
+            print "Directory: ", (self.localDir + "/frames"), " does not exist, creating..."
+            os.makedirs(self.localDir + "/frames")
+        #Make sure recording directory exists
+        if not os.path.exists(self.localDir + "/recording"):
+            print "Directory: ", (self.localDir + "/recording"), " does not exist, creating..."
+            os.makedirs(self.localDir + "/recording")
         #set window title
         self.setWindowTitle("FaceReqRF - Transmission")
         self.setWindowIcon(QIcon(self.localDir + "/images/FaceReqRFIcon.png"))
@@ -80,35 +98,39 @@ class mainWindow(QtGui.QMainWindow):
             self.transmit_button.setText("<< Start Transmission >>")  #change the text written on the btn  
 
     def modifySettings(self):
-        #pause stream
-        if self.tranFlag == True:
-            self.startVideo()
-        #instantiate the dialog box
-        self.settings_dialog = TransmissionSettings()
-        #set values
-        self.settings_dialog.setValues(self.vid.transMeth,self.vid.host,self.vid.port,self.vid.buf,self.vid.transFreq,self.vid.transSamp,self.vid.transBand,self.vid.cameraPort, self.vid.flipFrame, self.vid.frame, self.vid.skipValue)
-        print "Running dialog box."
-        self.settings_dialog.exec_()
-        print "Getting setting values."
-        self.vid.transMeth,self.vid.host,self.vid.port,self.vid.buf,self.vid.transFreq,self.vid.transSamp,self.vid.transBand, newCamPort, self.vid.flipFrame, self.vid.frame, self.vid.skipValue = self.settings_dialog.getValues()
-        if self.vid.cameraPort != newCamPort:
-            self.vid.cameraPort = newCamPort            
-            self.vid.camera = cv2.VideoCapture(self.vid.cameraPort)    
-        
+        try:                
+            #pause stream
+            if self.tranFlag == True:
+                self.startVideo()
+            #instantiate the dialog box
+            self.settings_dialog = TransmissionSettings()
+            #set values
+            self.settings_dialog.setValues(self.vid.transMeth,self.vid.host,self.vid.port,self.vid.buf,self.vid.transFreq,self.vid.transSamp,self.vid.transBand,self.vid.cameraPort, self.vid.flipFrame, self.vid.frame, self.vid.skipValue)
+            print "Running dialog box."
+            self.settings_dialog.exec_()
+            print "Getting setting values."
+            self.vid.transMeth,self.vid.host,self.vid.port,self.vid.buf,self.vid.transFreq,self.vid.transSamp,self.vid.transBand, newCamPort, self.vid.flipFrame, self.vid.frame, self.vid.skipValue = self.settings_dialog.getValues()
+            if self.vid.cameraPort != newCamPort:
+                self.vid.cameraPort = newCamPort            
+                self.vid.camera = cv2.VideoCapture(self.vid.cameraPort)    
+        except Exception as e:
+            print "Settings dialog error.\nException:" + str(e)
+            errorBox("Settings dialog error.\nException:" + str(e))
+            
     def helpWindow(self):
         print "showing help window..."
         self.msg = helpMenu()
         self.msg.exec_()
 
     def quitProgram(self):
-        if self.tranFlag == True:
-            print "Pausing reception..."
-            self.vid.run_video = False #set the startVideo function flag off, so we pause
-            self.tranFlag = False #set local flag
-            self.transmit_button.setText("<< Start Transmission >>")  #change the text written on the btn
-        print "Quiting..."
-        self.close()
- 
+        try:
+            if self.tranFlag == True:
+                self.startVideo()
+            print "Quiting..."
+            self.close()
+        except Exception as e:
+            print "Quit error.\nException:" + str(e)
+            errorBox("Quit error.\nException:" + str(e))
 def main():
     application = QtGui.QApplication(sys.argv) #create new application
     main_window = mainWindow() #Create new instance of main window
@@ -118,7 +140,6 @@ def main():
     application.exec_() #monitor application for events
     sys.exit(application.exec_())
     sys.exit(main_window.vid.pauseVideo)
-    
     
 if __name__ == "__main__":
     main()

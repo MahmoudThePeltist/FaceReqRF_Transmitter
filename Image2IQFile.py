@@ -1,7 +1,9 @@
 import numpy as np
-import scipy.ndimage as img
+import cv2
 
 class SpectrumPainter(object):
+    """This class transmforms and image into a signal"""    
+    
     def __init__(self, Fs=1000000, T_line=0.005):
         self.NFFT = 4096
         self.Fs = Fs
@@ -12,7 +14,9 @@ class SpectrumPainter(object):
         return int(np.ceil(self.T_line * self.Fs / self.NFFT))
 
     def convert_image(self, filename):
-        pic = img.imread(filename)
+        #read image and store it as an array of values from 0 to 255
+        pic = cv2.imread(filename)
+        
         # Set FFT size to be double the image size so that the edge of the spectrum stays clear
         # preventing some bandfilter artifacts
         self.NFFT = 2*pic.shape[1]
@@ -37,6 +41,8 @@ class SpectrumPainter(object):
         return linear
 
 class Image2IQFile(object):
+    """This class creates a hackrf file to tranmsit"""
+    
     def __init__(self,sampleRate = 1000000,lineTime = 0.005,outputFile = "image.iqhackrf",sourceFile = "image.jpg"):
         self.sampleRate = sampleRate #Samplerate of the radio
         self.lineTime = lineTime #Time for each line to show

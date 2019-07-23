@@ -5,9 +5,14 @@ class helpMenu(QDialog):
     """This class will display a dialog that contains help info"""
     
     def __init__(self):
-        super(helpMenu,self).__init__()
-        #get local directory
-        self.localDir = os.path.dirname(os.path.realpath(__file__)) 
+        super(helpMenu,self).__init__()        
+        #get the local directory
+        if getattr(sys, 'frozen', False):
+            # The application is frozen
+            self.localDir = os.path.dirname(sys.executable)
+        else:
+            # The application is not frozen
+            self.localDir = os.path.dirname(os.path.realpath(__file__))    
         #set the window title and icon
         self.setWindowTitle("Help")
         self.setWindowIcon(QIcon(self.localDir + "/images/FaceReqRFIcon.png"))

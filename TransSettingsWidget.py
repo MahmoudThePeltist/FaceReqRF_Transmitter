@@ -1,13 +1,20 @@
 from PyQt4.QtGui import *
 import os
+import sys
 
 class TransmissionSettings(QDialog):
     """This class provides a settings window for the transmitter application"""
     
     def __init__(self):
         super(TransmissionSettings, self).__init__()
-
-        self.localDir = os.path.dirname(os.path.realpath(__file__))        
+        #get the local directory
+        if getattr(sys, 'frozen', False):
+            # The application is frozen
+            self.localDir = os.path.dirname(sys.executable)
+        else:
+            # The application is not frozen
+            self.localDir = os.path.dirname(os.path.realpath(__file__))    
+        
         self.setWindowTitle("Transmission Settings")                
         self.setWindowIcon(QIcon(self.localDir + "/images/FaceReqRFIcon.png")) 
         
