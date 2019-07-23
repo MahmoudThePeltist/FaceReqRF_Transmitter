@@ -25,7 +25,7 @@ class ShowVideo(QtCore.QObject):
         #HackRF variables
         self.transFreq = 440000000
         self.transBand = 1750000
-        self.transSamp = 100000
+        self.transSamp = 750000
         self.flipFrame = 0
         
     camera = cv2.VideoCapture(1)
@@ -57,10 +57,10 @@ class ShowVideo(QtCore.QObject):
                 #get frames from CNT class
                 print "Capturing Frame: ", self.counter
                 #resize and save the frame as a jpeg image locally
-                frame = cv2.resize(frame,(0,0),fx=self.frameX,fy=self.frameY)
-                cv2.imwrite(self.localDir + "/frames/frame.jpg", frame)
+                frame2resize = cv2.resize(frame,(0,0),fx=self.frameX,fy=self.frameY)
+                cv2.imwrite(self.localDir + "/frames/frame.jpg", frame2resize)
                 ###Based on the chosen transmission method the images are either sent over LAN or via HACKRF
-                if(self.counter == self.skipValue):  
+                if(self.counter >= self.skipValue):  
                     self.counter = 0 
                     if self.transMeth == 0:                                               
                             print "sending image: ", self.counter , " over LAN"
@@ -69,9 +69,9 @@ class ShowVideo(QtCore.QObject):
                         print "Encoding frame: ", self.counter
                         #frame can be flipped depending on receiving waterfall                        
                         if self.flipFrame == True:
-                            frame_toSend = cv2.flip(frame, 0)
+                            frame_toSend = cv2.flip(frame2resize, 0)
                         else:
-                            frame_toSend = frame
+                            frame_toSend = frame2resize
                         cv2.imwrite(self.localDir + "/frames/frameSmallG.jpg", frame_toSend)
                         os.system("python " + self.localDir +  "/spectrum_painter/img2iqstream.py -s 1000000 -l 0.004 -o " + self.localDir +  "/frames/frameSmallG.iqhackrf --format hackrf " + self.localDir +  "/frames/frameSmallG.jpg")
                         print "Transmiting frame: "

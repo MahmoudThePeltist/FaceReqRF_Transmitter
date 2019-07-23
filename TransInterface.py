@@ -1,12 +1,12 @@
 import cv2
 import sys
 import os
-
 from PyQt4 import QtCore
 from PyQt4 import QtGui
-
+#import local classes
 from TransSettingsWidget import *
 from TransDisplayMethods import *
+from TransDialogHelp import *
 
 class mainWindow(QtGui.QMainWindow):
     def __init__(self):
@@ -38,10 +38,12 @@ class mainWindow(QtGui.QMainWindow):
         #Buttons:
         self.transmit_button = QtGui.QPushButton('<< Start Transmition >>')
         self.settings_button = QtGui.QPushButton('Transmission Settings')
+        self.help_button = QtGui.QPushButton('Help')
         self.quit_button = QtGui.QPushButton('Quit')
         #Connections:    
         self.transmit_button.clicked.connect(self.startVideo)
         self.settings_button.clicked.connect(self.modifySettings)
+        self.help_button.clicked.connect(self.helpWindow)
         self.quit_button.clicked.connect(self.quitProgram)
         self.vid.video_signal.connect(self.image_viewer.setImage)
         #next is a button designed to do nothing but start transmission, this is to "fix" the 
@@ -53,6 +55,7 @@ class mainWindow(QtGui.QMainWindow):
         self.button_layout_B = QtGui.QHBoxLayout()
         #add Widgets to their layouts
         self.button_layout_B.addWidget(self.settings_button)
+        self.button_layout_B.addWidget(self.help_button)
         self.button_layout_B.addWidget(self.quit_button)
         self.total_layout.addWidget(self.image_viewer)
         self.total_layout.addWidget(self.transmit_button)
@@ -74,8 +77,7 @@ class mainWindow(QtGui.QMainWindow):
             print "Pausing reception..."
             self.vid.run_video = False #set the startVideo function flag off, so we pause
             self.tranFlag = False #set local flag
-            self.transmit_button.setText("<< Start Transmission >>")  #change the text written on the btn
-            
+            self.transmit_button.setText("<< Start Transmission >>")  #change the text written on the btn  
 
     def modifySettings(self):
         #pause stream
@@ -90,10 +92,20 @@ class mainWindow(QtGui.QMainWindow):
         print "Getting setting values."
         self.vid.transMeth,self.vid.host,self.vid.port,self.vid.buf,self.vid.transFreq,self.vid.transSamp,self.vid.transBand, newCamPort, self.vid.flipFrame, self.vid.frameX, self.vid.frameY, self.vid.skipValue = self.settings_dialog.getValues()
         if self.vid.cameraPort != newCamPort:
-            self.vid.cameraPort == newCamPort            
+            self.vid.cameraPort = newCamPort            
             self.vid.camera = cv2.VideoCapture(self.vid.cameraPort)    
         
+    def helpWindow(self):
+        print "showing help window..."
+        self.msg = helpMenu()
+        self.msg.exec_()
+
     def quitProgram(self):
+        if self.tranFlag == True:
+            print "Pausing reception..."
+            self.vid.run_video = False #set the startVideo function flag off, so we pause
+            self.tranFlag = False #set local flag
+            self.transmit_button.setText("<< Start Transmission >>")  #change the text written on the btn
         print "Quiting..."
         self.close()
  
